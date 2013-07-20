@@ -9,14 +9,17 @@
         <script src="js/angular.min.js"></script>
         <script src="js/angular-mobile.min.js"></script>
         <script src="js/jquery-1.7.1.min.js"></script>
+        <script src="js/Box2dWeb-2.1.a.3.min.js"></script>
     </head>
-    <body ng-app="myApp">
-    	<div ng-controller="myCtrl">
+    <body>
+    	<div>
             <h2>Fruit Frenzy v.01</h2>
 			<div class="gameContainer">
-		        <canvas id="canvas1" width="750" height="370" class="canvas fader"></canvas>
+		        <canvas id="canvas" class="canvas fader"></canvas>
 			</div>
 		</div>
+        <script src="js/box2d.js"></script>
+        <script src="js/init.js"></script>
 		<script src="js/main.js"></script>	
     </body>
 </html>
