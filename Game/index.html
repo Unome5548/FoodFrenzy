@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Test Site</title>
+        <title>Fruit Frenzy</title>
         <link rel="stylesheet" href="style.css">
         <script src="js/angular.min.js"></script>
         <script src="js/angular-mobile.min.js"></script>
@@ -12,18 +12,11 @@
     </head>
     <body ng-app="myApp">
     	<div ng-controller="myCtrl">
-            <h2>Schedtacular 2.0</h2>
-			<div class="dog">
+            <h2>Fruit Frenzy v.01</h2>
+			<div class="gameContainer">
 		        <canvas id="canvas1" width="750" height="370" class="canvas fader"></canvas>
 			</div>
-            <button ng-click="loadBuilding(1)">Building 1</button>
-            <button ng-click="loadBuilding(2)">Building 2</button>
-            <button ng-click="loadBuilding(3)">Building 3</button>
-            <button ng-click="loadBuilding(4)">Building 4</button>
-            Selected Room: {{selectedRoom.id}}
 		</div>
-
-
 		<script src="js/main.js"></script>	
     </body>
 </html>

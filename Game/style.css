@@ -10,47 +10,11 @@ h1, h2{
   border: 1px solid #808080;
   background: #ffffff;
   transition: .5s;
+  width: 780px;
+  margin: 0 auto;
 }
 
-.fader
-{
-  animation:fadeIn 1s;
-  -webkit-animation: fadeIn 1s;
-  -moz-animation: fadeIn 1.0s;
-}
-
-@keyframes fadeIn
-{
-  from {
-    opacity:0;
-    transform: translateY(-200px);
-  }
-  to {
-    opacity:1;
-    transform: translateY(0px);
-  }
-}
-
-@-webkit-keyframes fadeIn{
-  from {
-    opacity:0.0;
-    -webkit-transform: translateY(-200px);
-
-  }
-  to {
-    opacity:1.0;
-    -webkit-transform: translateY(0px);
-  }
-}
-
-@-moz-keyframes fadeIn {
-  from {
-    opacity:0;
-    -moz-transform: translateY(-200px);
-    height: 0px;=
-  }
-  to {
-    opacity:1;
-    -moz-transform: translateY(0px);
-  }
+.gameContainer{
+  width: 800px;
+  margin: 0 auto;
 }
