@@ -27,6 +27,7 @@ function game()
 	
 	this.game_objects = [];														//global array of all objects to manage
 	
+	this.health = 100;
 	this.points = 0;
 	this.to_destroy = [];
 	this.time_elapsed = 0;
@@ -86,7 +87,7 @@ game.prototype.create_box2d_world = function(){
 game.prototype.start = function(){												//Start the game :) Setup and start ticking the clock
 
 	this.on = true;
-	this.total_points = 0;
+	this.total_health = 0;
 	this.setup();
 	this.is_paused = false;
 	this.tick();
@@ -101,7 +102,9 @@ game.prototype.redraw_world = function(){
 	var img = img_res('bg1.png');
 	this.ctx.drawImage(img, 0 , 0 , this.canvas_width, this.canvas_height);
 	
-	write_text({x : 25 , y : 25 , font : 'bold 15px arial' , color : '#fff' , text : 'Score ' + this.points , ctx : this.ctx})
+	write_text({x : 25 , y : 25 , font : 'bold 15px arial' , color : '#fff' , text : 'Health ' + this.health , ctx : this.ctx})
+	write_text({x : 125 , y : 25 , font : 'bold 15px arial' , color : '#fff' , text : 'Score ' + this.points , ctx : this.ctx})
+
 	
 	for(var i in this.game_objects){
 		this.game_objects[i].draw();
@@ -116,7 +119,7 @@ game.prototype.tick = function(cnt){
 			var xc = Math.random() * 8 + this.screen_width/2 - 4;
 			var yc = 10;
 			console.log(this.screen_height/2);
-			this.game_objects.push(new apple({x : xc ,y : yc,game:this}));
+			this.game_objects.push(new enemyProjectile({x : xc ,y : yc,game:this}));
 		}
 		
 		for(var i in this.game_objects){										//tick all objects, if dead then remove
@@ -200,15 +203,17 @@ game.prototype.setup_collision_handler = function(){
 		var a = contact.GetFixtureA().GetUserData();
 		var b = contact.GetFixtureB().GetUserData();
 		
-		if(a instanceof player && b instanceof apple){
+		if(a instanceof player && b instanceof enemyProjectile){
 			that.destroy_object(b);
+			that.health-= 5;
 			that.points++;
 		}
-		else if(b instanceof player && a instanceof apple){
+		else if(b instanceof player && a instanceof enemyProjectile){
 			that.destroy_object(a);
+			that.health-= 5;
 			that.points++;
 		}
-		else if(a instanceof apple && b instanceof wall){						//apple hits a wall
+		else if(a instanceof enemyProjectile && b instanceof wall){						//enemyProjectile hits a wall
 			that.destroy_object(a);
 		}
 	}
@@ -218,7 +223,7 @@ game.prototype.destroy_object = function(obj){									//schedule an object for 
 	this.to_destroy.push(obj);
 }
 
-function apple(options){
+function enemyProjectile(options){
 	this.height = 0.5;
 	this.width = 0.5;
 	this.x = options.x;
@@ -240,9 +245,9 @@ function apple(options){
 	this.body = body;
 }
 
-apple.img = img_res('star.png');
+enemyProjectile.img = img_res('star.png');
 
-apple.prototype.draw = function(){
+enemyProjectile.prototype.draw = function(){
 	if(this.body == null){
 		return false;
 	}
@@ -257,20 +262,20 @@ apple.prototype.draw = function(){
 	var height = this.height * scale;
 	
 	this.game.ctx.translate(sx, sy);
-	this.game.ctx.drawImage(apple.img , -width / 2, -height / 2, width, height);
+	this.game.ctx.drawImage(enemyProjectile.img , -width / 2, -height / 2, width, height);
 	this.game.ctx.translate(-sx, -sy);
 }
 
-apple.prototype.tick = function(){
+enemyProjectile.prototype.tick = function(){
 	this.age++;
 	
-	if(this.body.GetPosition().y < 0){											//destroy the apple if it falls below the x axis
+	if(this.body.GetPosition().y < 0){											//destroy the enemyProjectile if it falls below the x axis
 		this.game.destroy_object(this);
 	}
 }
 
 
-apple.prototype.destroy = function(){											//Destroy the apple when player eats it
+enemyProjectile.prototype.destroy = function(){											//Destroy the enemyProjectile when player eats it
 	if(this.body == null){
 		return;
 	}
