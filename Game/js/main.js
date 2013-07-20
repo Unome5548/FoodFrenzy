@@ -65,7 +65,9 @@ game.prototype.setup = function()
 	var h = this.screen_height;
 	
 	this.create_box2d_world();													//create the box2d world
-	this.game_objects.push(new wall({x : 1, y: 0, width : 34, height:1, game : this}));	
+	this.game_objects.push(new wall({x : 1, y: 0, width : 34, height:.25, friction: 1, game : this}));
+	this.game_objects.push(new wall({x : -1, y: 0, width : .25, height: 12, friction: 0, game : this}));	
+	this.game_objects.push(new wall({x : 18, y: 0, width : .25, height: 12, friction: 0, game : this}));	
 	this.player = new player({x : w/2, y: h/2 , game : this});					//the player
 	this.game_objects.push(this.player);
 	this.start_handling();														//attach event handlers for key presses
@@ -96,7 +98,7 @@ game.prototype.redraw_world = function(){
 	var w = this.screen_width;
 	var h = this.screen_height;
 	
-	var img = img_res('orange_hills.png');
+	var img = img_res('bg1.png');
 	this.ctx.drawImage(img, 0 , 0 , this.canvas_width, this.canvas_height);
 	
 	write_text({x : 25 , y : 25 , font : 'bold 15px arial' , color : '#fff' , text : 'Score ' + this.points , ctx : this.ctx})
@@ -217,8 +219,8 @@ game.prototype.destroy_object = function(obj){									//schedule an object for 
 }
 
 function apple(options){
-	this.height = 0.25;
-	this.width = 0.25;
+	this.height = 0.5;
+	this.width = 0.5;
 	this.x = options.x;
 	this.y = options.y;
 	
@@ -238,7 +240,7 @@ function apple(options){
 	this.body = body;
 }
 
-apple.img = img_res('apple.png');
+apple.img = img_res('star.png');
 
 apple.prototype.draw = function(){
 	if(this.body == null){
@@ -386,6 +388,7 @@ function wall(options)	{														//Static Wall object
 		'density' : 10 ,
 		'fixedRotation' : true ,
 		'userData' : this ,
+		'friction' : options.friction,
 		'type' : b2Body.b2_staticBody ,
 	};
 	
