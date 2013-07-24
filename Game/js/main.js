@@ -71,6 +71,8 @@ game.prototype.setup = function()
 	this.game_objects.push(new wall({x : 18, y: 0, width : .25, height: 12, friction: 0, game : this}));	
 	this.player = new player({x : w/2, y: h/2 , game : this});					//the player
 	this.game_objects.push(this.player);
+	this.game_objects.push(new Enemy({x : 10, y: 5, width : 2, height: 2, health: 25, speed: 3,  game : this}));
+
 	this.start_handling();														//attach event handlers for key presses
 	this.setup_collision_handler();												//setup collision handler too
 }
@@ -119,7 +121,7 @@ game.prototype.tick = function(cnt){
 			var xc = Math.random() * 8 + this.screen_width/2 - 4;
 			var yc = 10;
 			console.log(this.screen_height/2);
-			this.game_objects.push(new enemyProjectile({x : xc ,y : yc,game:this}));
+			// this.game_objects.push(new enemyProjectile({x : xc ,y : yc,game:this}));
 		}
 		
 		for(var i in this.game_objects){										//tick all objects, if dead then remove
@@ -338,6 +340,7 @@ player.prototype.add_velocity = function(vel){
 	var v = b.GetLinearVelocity();
 	
 	v.Add(vel);																	//check for max horizontal and vertical velocities and then set
+
 	if(Math.abs(v.y) > this.max_ver_vel){
 		v.y = this.max_ver_vel * v.y/Math.abs(v.y);
 	}
@@ -379,6 +382,97 @@ player.prototype.is_out = function(){											//if player has fallen below the
 		return true;
 	}
 	return false;
+}
+
+function Enemy(options){
+	this.x = options.x;
+	this.y = options.y;
+	this.height = options.height;
+	this.width = options.width;
+	this.game = options.game;
+	this.age = 0;
+	this.health = options.health;
+	this.speed = 3;
+	this.do_move_left = true;
+	this.max_hor_vel = .5;
+	this.max_ver_vel = 2.5;
+
+	var info = { 
+		'density' : 1 ,
+		'fixedRotation' : true ,
+		'userData' : this ,
+		'type' : b2Body.b2_dynamicBody ,
+		'restitution' : 0.0 ,
+	};
+
+	var body = create_box(this.game.box2d_world , this.x, this.y, this.width, this.height, info);
+	this.body = body;
+}
+
+Enemy.prototype.tick = function(){
+	var xPos = this.game.get_offset(this.body.GetPosition()).x;
+	var yPos = this.game.get_offset(this.body.GetPosition()).y;
+	var yVel;
+	if(xPos < 2){
+		this.do_move_left = false;
+		this.do_move_right = true;
+	}
+	else if(xPos > 16.75){
+		this.do_move_right = false;
+		this.do_move_left = true;
+	}
+	if(yPos  < 2)yVel = 0;
+	else yVel = .5;
+	if(this.do_move_left){
+		this.add_velocity(new b2Vec2(-.05, yVel));
+	}
+	
+	if(this.do_move_right){
+		this.add_velocity(new b2Vec2(.05,yVel));
+	}
+
+	if(this.game.time_elapsed % 50 == 0){											//create a random object on top
+		console.log("YPos", this.body.GetPosition().y);
+		this.game.game_objects.push(new enemyProjectile({x : xPos, y : this.body.GetPosition().y - this.height/2  ,game:this.game}));
+	}
+	
+	this.age++;
+}
+
+Enemy.prototype.add_velocity = function(vel){
+	var b = this.body;
+	var v = b.GetLinearVelocity();
+	
+	v.Add(vel);																	//check for max horizontal and vertical velocities and then set
+	if(Math.abs(v.y) > this.max_ver_vel){
+		v.y = this.max_ver_vel * v.y/Math.abs(v.y);
+		console.log("YVel", v.y);
+	}
+	if(Math.abs(v.x) > this.max_hor_vel){
+		v.x = this.max_hor_vel * v.x/Math.abs(v.x);
+	}
+	
+	b.SetLinearVelocity(v);														//set the new velocity
+}
+
+Enemy.img = img_res('pizza.gif');
+
+Enemy.prototype.draw = function(){
+	if(this.body == null){
+		return false;
+	}
+
+	var c = this.game.get_offset(this.body.GetPosition());
+	var scale = this.game.scale;
+	var sx = c.x * scale;
+	var sy = c.y * scale;
+	
+	var width = this.width * scale;
+	var height = this.height * scale;
+	// console.log("Draw enemy");
+	this.game.ctx.translate(sx, sy);
+	this.game.ctx.drawImage(Enemy.img , -width / 2, -height / 2, width, height);
+	this.game.ctx.translate(-sx, -sy);
 }
 														
 function wall(options)	{														//Static Wall object
