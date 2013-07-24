@@ -71,7 +71,12 @@ game.prototype.setup = function()
 	this.game_objects.push(new wall({x : 18, y: 0, width : .25, height: 12, friction: 0, game : this}));	
 	this.player = new player({x : w/2, y: h/2 , game : this});					//the player
 	this.game_objects.push(this.player);
-	this.game_objects.push(new Enemy({x : 10, y: 5, width : 2, height: 2, health: 25, speed: 3,  game : this}));
+	for(var i=0; i<5; i++){
+		var tempX = 2 + Math.random() * 10;
+		var tempY = 5 + Math.random() * 5;
+		this.game_objects.push(new Enemy({x : tempX, y: tempY, width : 2, height: 2, health: 25, speed: 3,  game : this}));
+	}
+
 
 	this.start_handling();														//attach event handlers for key presses
 	this.setup_collision_handler();												//setup collision handler too
@@ -240,7 +245,7 @@ function enemyProjectile(options){
 		'linearDamping' : linear_damping ,
 		'fixedRotation' : true ,
 		'userData' : this ,
-		'type' : b2Body.b2_dynamicBody ,
+		'type' : b2Body.b2_kinematicBody,
 	};
 	
 	var body = create_box(this.game.box2d_world , this.x, this.y, this.width, this.height, info);
@@ -274,6 +279,7 @@ enemyProjectile.prototype.tick = function(){
 	if(this.body.GetPosition().y < 0){											//destroy the enemyProjectile if it falls below the x axis
 		this.game.destroy_object(this);
 	}
+	this.add_velocity(new b2Vec2(0, -.05));
 }
 
 
@@ -284,6 +290,22 @@ enemyProjectile.prototype.destroy = function(){											//Destroy the enemyPro
 	this.body.GetWorld().DestroyBody( this.body );
 	this.body = null;
 	this.dead = true;
+}
+
+enemyProjectile.prototype.add_velocity = function(vel){
+	var b = this.body;
+	var v = b.GetLinearVelocity();
+	
+	v.Add(vel);																	//check for max horizontal and vertical velocities and then set
+
+	if(Math.abs(v.y) > 3){
+		v.y = 3 * v.y/Math.abs(v.y);
+	}
+	if(Math.abs(v.x) > 3){
+		v.x = 3 * v.x/Math.abs(v.x);
+	}
+	
+	b.SetLinearVelocity(v);														//set the new velocity
 }
 
 function player(options){
@@ -392,16 +414,17 @@ function Enemy(options){
 	this.game = options.game;
 	this.age = 0;
 	this.health = options.health;
-	this.speed = 3;
 	this.do_move_left = true;
-	this.max_hor_vel = .5;
-	this.max_ver_vel = 2.5;
+	this.max_hor_vel = .2 + Math.random() * 3 / 5 ;
+	this.max_ver_vel = 2;
+
+	console.log("ENEM SPEED", this.max_hor_vel);
 
 	var info = { 
 		'density' : 1 ,
 		'fixedRotation' : true ,
 		'userData' : this ,
-		'type' : b2Body.b2_dynamicBody ,
+		'type' : b2Body.b2_kinematicBody ,
 		'restitution' : 0.0 ,
 	};
 
@@ -424,11 +447,11 @@ Enemy.prototype.tick = function(){
 	if(yPos  < 2)yVel = 0;
 	else yVel = .5;
 	if(this.do_move_left){
-		this.add_velocity(new b2Vec2(-.05, yVel));
+		this.add_velocity(new b2Vec2(-.05, 0));
 	}
 	
 	if(this.do_move_right){
-		this.add_velocity(new b2Vec2(.05,yVel));
+		this.add_velocity(new b2Vec2(.05,0));
 	}
 
 	if(this.game.time_elapsed % 50 == 0){											//create a random object on top
