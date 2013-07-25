@@ -1,17 +1,12 @@
-
 var global_game = null;
 
-//start game once page has finished loaded
 $(function() { 
 	start_game();
 });
 
-function start_game()
-{
+function start_game(){
 	var g = new game();
-	
 	global_game = g;
-	
 	$(window).resize(function() {
 		g.resize();
 	});
@@ -19,43 +14,37 @@ function start_game()
 	g.start();
 }
 
-function game()
-{
+function game(){
 	this.fps = 60;
 	this.scale = 50;
-	
-	
 	this.game_objects = [];														//global array of all objects to manage
-	
 	this.health = 100;
 	this.points = 0;
 	this.to_destroy = [];
 	this.time_elapsed = 0;
 }
 
-game.prototype.resize = function()
-{
+game.prototype.resize = function(){
 	var canvas = this.canvas;
-	
 	var w = 1136;																//Set the canvas dimensions to match the window dimensions
 	var h = 640;
 	
 	canvas.width(w);
 	canvas.height(h);
 	
-	canvas.attr('width' , w * 0.75);
-	canvas.attr('height' , h * 0.75);
+	canvas.attr('width' , w);
+	canvas.attr('height' , h);
 	
 	this.canvas_width = canvas.attr('width');
 	this.canvas_height = canvas.attr('height');
 	
-	this.screen_height = 10;
-	this.scale = this.canvas_height / this.screen_height;
+	this.scale = 50;
+
+	this.screen_height = this.canvas_height/ this.scale;
 	this.screen_width = this.canvas_width / this.scale;
 }
 
-game.prototype.setup = function()
-{
+game.prototype.setup = function(){
 	this.ctx = ctx = $('#canvas').get(0).getContext('2d');
 	var canvas = $('#canvas');
 	this.canvas = canvas;
@@ -66,17 +55,16 @@ game.prototype.setup = function()
 	var h = this.screen_height;
 	
 	this.create_box2d_world();													//create the box2d world
-	this.game_objects.push(new wall({x : 1, y: 0, width : 34, height:.25, friction: 1, game : this}));
+	this.game_objects.push(new wall({x : 1, y: 0, width : 44, height:.25, friction: 1, game : this}));
 	this.game_objects.push(new wall({x : -1, y: 0, width : .25, height: 12, friction: 0, game : this}));	
-	this.game_objects.push(new wall({x : 18, y: 0, width : .25, height: 12, friction: 0, game : this}));	
-	this.player = new player({x : w/2, y: h/2 , game : this});					//the player
+	this.game_objects.push(new wall({x : 23, y: 0, width : .25, height: 12, friction: 0, game : this}));	
+	this.player = new player({x : w/2, y: 0 , game : this});					//the player
 	this.game_objects.push(this.player);
 	for(var i=0; i<5; i++){
 		var tempX = 2 + Math.random() * 10;
 		var tempY = 5 + Math.random() * 5;
 		this.game_objects.push(new Enemy({x : tempX, y: tempY, width : 2, height: 2, health: 25, speed: 3,  game : this}));
 	}
-
 
 	this.start_handling();														//attach event handlers for key presses
 	this.setup_collision_handler();												//setup collision handler too
@@ -92,7 +80,6 @@ game.prototype.create_box2d_world = function(){
 }
 
 game.prototype.start = function(){												//Start the game :) Setup and start ticking the clock
-
 	this.on = true;
 	this.total_health = 0;
 	this.setup();
@@ -105,13 +92,11 @@ game.prototype.redraw_world = function(){
 	
 	var w = this.screen_width;
 	var h = this.screen_height;
-	
 	var img = img_res('bg1.png');
 	this.ctx.drawImage(img, 0 , 0 , this.canvas_width, this.canvas_height);
 	
-	write_text({x : 25 , y : 25 , font : 'bold 15px arial' , color : '#fff' , text : 'Health ' + this.health , ctx : this.ctx})
-	write_text({x : 125 , y : 25 , font : 'bold 15px arial' , color : '#fff' , text : 'Score ' + this.points , ctx : this.ctx})
-
+	write_text({x : 25 , y : 25 , font : 'bold 15px arial' , color : '#fff' , text : 'Health ' + this.health , ctx : this.ctx});
+	write_text({x : 125 , y : 25 , font : 'bold 15px arial' , color : '#fff' , text : 'Score ' + this.points , ctx : this.ctx});
 	
 	for(var i in this.game_objects){
 		this.game_objects[i].draw();
@@ -122,11 +107,9 @@ game.prototype.tick = function(cnt){
 	if(!this.is_paused && this.on){
 		this.time_elapsed += 1;
 		
-		if(this.time_elapsed % 50 == 0){											//create a random object on top
+		if(this.time_elapsed % 50 == 0){										//create a random object on top
 			var xc = Math.random() * 8 + this.screen_width/2 - 4;
-			var yc = 10;
-			console.log(this.screen_height/2);
-			// this.game_objects.push(new enemyProjectile({x : xc ,y : yc,game:this}));
+			var yc = 10;														// this.game_objects.push(new enemyProjectile({x : xc ,y : yc,game:this}));
 		}
 		
 		for(var i in this.game_objects){										//tick all objects, if dead then remove
@@ -171,6 +154,21 @@ game.prototype.start_handling = function(){
 		that.key_up(e);
 		return false;
 	});
+
+	$(document).on('click', function (e){
+		var mouseV = that.get_offset(new b2Vec2(e.pageX/that.scale, e.pageY/that.scale));
+
+		that.player.shoot(mouseV);
+
+	});
+}
+
+function getMousePos(canvas, evt) {																//Mouse Position Detector
+    var rect = canvas.getBoundingClientRect();
+    return {
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top
+    };
 }
 
 game.prototype.key_down = function(e){
@@ -196,7 +194,6 @@ game.prototype.key_up = function(e){
 	else if(code == 37){														//LEFT
 		this.player.do_move_left = false;
 	}
-	
 	else if(code == 39){														//RIGHT
 		this.player.do_move_right = false;
 	}
@@ -206,7 +203,6 @@ game.prototype.setup_collision_handler = function(){
 	var that = this;
 	
 	b2ContactListener.prototype.BeginContact = function (contact) {				//Override a few functions of class b2ContactListener
-
 		var a = contact.GetFixtureA().GetUserData();
 		var b = contact.GetFixtureB().GetUserData();
 		
@@ -223,6 +219,17 @@ game.prototype.setup_collision_handler = function(){
 		else if(a instanceof enemyProjectile && b instanceof wall){						//enemyProjectile hits a wall
 			that.destroy_object(a);
 		}
+		else if(a instanceof playerBullet && b instanceof Enemy){
+			b.takeDamage(10);
+			that.destroy_object(a);
+		}
+		else if(a instanceof playerBullet && b instanceof wall){
+			that.destroy_object(a);
+		}
+		else if(a instanceof playerBullet && b instanceof enemyProjectile){
+			that.destroy_object(a);
+			that.destroy_object(b);
+		}
 	}
 }
 
@@ -230,313 +237,6 @@ game.prototype.destroy_object = function(obj){									//schedule an object for 
 	this.to_destroy.push(obj);
 }
 
-function enemyProjectile(options){
-	this.height = 0.25;
-	this.width = 0.25;
-	this.x = options.x;
-	this.y = options.y;
-	
-	this.game = options.game;
-	
-	var linear_damping = 2;
-	
-	var info = { 
-		'density' : 10 ,
-		'linearDamping' : linear_damping ,
-		'fixedRotation' : true ,
-		'userData' : this ,
-		'type' : b2Body.b2_kinematicBody,
-	};
-	
-	var body = create_box(this.game.box2d_world , this.x, this.y, this.width, this.height, info);
-	this.body = body;
-}
+// canvas.addEventListener('click', function(evt) {
 
-enemyProjectile.img = img_res('pepperoni.gif');
-
-enemyProjectile.prototype.draw = function(){
-	if(this.body == null){
-		return false;
-	}
-	
-	var c = this.game.get_offset(this.body.GetPosition());
-	var scale = this.game.scale;
-	
-	var sx = c.x * scale;
-	var sy = c.y * scale;
-	
-	var width = this.width * scale;
-	var height = this.height * scale;
-	
-	this.game.ctx.translate(sx, sy);
-	this.game.ctx.drawImage(enemyProjectile.img , -width / 2, -height / 2, width, height);
-	this.game.ctx.translate(-sx, -sy);
-}
-
-enemyProjectile.prototype.tick = function(){
-	this.age++;
-	
-	if(this.body.GetPosition().y < 0){											//destroy the enemyProjectile if it falls below the x axis
-		this.game.destroy_object(this);
-	}
-	this.add_velocity(new b2Vec2(0, -.05));
-}
-
-
-enemyProjectile.prototype.destroy = function(){											//Destroy the enemyProjectile when player eats it
-	if(this.body == null){
-		return;
-	}
-	this.body.GetWorld().DestroyBody( this.body );
-	this.body = null;
-	this.dead = true;
-}
-
-enemyProjectile.prototype.add_velocity = function(vel){
-	var b = this.body;
-	var v = b.GetLinearVelocity();
-	
-	v.Add(vel);																	//check for max horizontal and vertical velocities and then set
-
-	if(Math.abs(v.y) > 3){
-		v.y = 3 * v.y/Math.abs(v.y);
-	}
-	if(Math.abs(v.x) > 3){
-		v.x = 3 * v.x/Math.abs(v.x);
-	}
-	
-	b.SetLinearVelocity(v);														//set the new velocity
-}
-
-function player(options){
-	this.height = 1.3;
-	this.width = 2.0;
-	
-	this.x = options.x;
-	this.y = options.y;
-	this.game = options.game;
-	this.age = 0;
-		
-	this.do_move_left = false;
-	this.do_move_right = false;
-	this.max_hor_vel = 2.5;
-	this,max_ver_vel = 4;
-	this.can_move_up = true;
-	
-	var info = { 
-		'density' : 10 ,
-		'fixedRotation' : true ,
-		'userData' : this ,
-		'type' : b2Body.b2_dynamicBody ,
-		'restitution' : 0.0 ,
-	};
-	
-	var body = create_box(this.game.box2d_world , this.x, this.y, this.width, this.height, info);
-	this.body = body;
-}
-
-player.prototype.tick = function(){
-	if(this.is_out()){															//turn off the game
-		this.game.on = false;
-		start_game();
-	}
-	
-	if(this.do_move_left){
-		this.add_velocity(new b2Vec2(-3,0));
-	}
-	
-	if(this.do_move_right){
-		this.add_velocity(new b2Vec2(3,0));
-	}
-	
-	if(this.do_move_up && this.can_move_up){
-		this.add_velocity(new b2Vec2(0,6));
-		this.can_move_up = false;
-	}
-	
-	this.age++;
-}
-
-player.prototype.add_velocity = function(vel){
-	var b = this.body;
-	var v = b.GetLinearVelocity();
-	
-	v.Add(vel);																	//check for max horizontal and vertical velocities and then set
-
-	if(Math.abs(v.y) > this.max_ver_vel){
-		v.y = this.max_ver_vel * v.y/Math.abs(v.y);
-	}
-	if(Math.abs(v.x) > this.max_hor_vel){
-		v.x = this.max_hor_vel * v.x/Math.abs(v.x);
-	}
-	
-	b.SetLinearVelocity(v);														//set the new velocity
-}
-player.img = img_res('tacosmall.png');
-
-player.prototype.draw = function(){
-	if(this.body == null){
-		return false;
-	}
-
-	var c = this.game.get_offset(this.body.GetPosition());
-	var scale = this.game.scale;
-	var sx = c.x * scale;
-	var sy = c.y * scale;
-	
-	var width = this.width * scale;
-	var height = this.height * scale;
-	
-	this.game.ctx.translate(sx, sy);
-	this.game.ctx.drawImage(player.img , -width / 2, -height / 2, width, height);
-	this.game.ctx.translate(-sx, -sy);
-}
-
-player.prototype.jump = function(){												//if player is already in vertical motion, then cannot jump
-	if(Math.abs(this.body.GetLinearVelocity().y) > 0.0){
-		return false;
-	}
-	this.do_move_up = true;
-}
-
-player.prototype.is_out = function(){											//if player has fallen below the 0 level of y axis in the box2d coordinates, then he is out
-	if(this.body.GetPosition().y < 0){
-		return true;
-	}
-	return false;
-}
-
-function Enemy(options){
-	this.x = options.x;
-	this.y = options.y;
-	this.height = options.height;
-	this.width = options.width;
-	this.game = options.game;
-	this.age = 0;
-	this.health = options.health;
-	this.do_move_left = true;
-	this.max_hor_vel = .2 + Math.random() * 3 / 5 ;
-	this.max_ver_vel = 2;
-
-	console.log("ENEM SPEED", this.max_hor_vel);
-
-	var info = { 
-		'density' : 1 ,
-		'fixedRotation' : true ,
-		'userData' : this ,
-		'type' : b2Body.b2_kinematicBody ,
-		'restitution' : 0.0 ,
-	};
-
-	var body = create_box(this.game.box2d_world , this.x, this.y, this.width, this.height, info);
-	this.body = body;
-}
-
-Enemy.prototype.tick = function(){
-	var xPos = this.game.get_offset(this.body.GetPosition()).x;
-	var yPos = this.game.get_offset(this.body.GetPosition()).y;
-	var yVel;
-	if(xPos < 2){
-		this.do_move_left = false;
-		this.do_move_right = true;
-	}
-	else if(xPos > 16.75){
-		this.do_move_right = false;
-		this.do_move_left = true;
-	}
-	if(yPos  < 2)yVel = 0;
-	else yVel = .5;
-	if(this.do_move_left){
-		this.add_velocity(new b2Vec2(-.05, 0));
-	}
-	
-	if(this.do_move_right){
-		this.add_velocity(new b2Vec2(.05,0));
-	}
-
-	if(this.game.time_elapsed % 50 == 0){											//create a random object on top
-		console.log("YPos", this.body.GetPosition().y);
-		this.game.game_objects.push(new enemyProjectile({x : xPos, y : this.body.GetPosition().y - this.height/2  ,game:this.game}));
-	}
-	
-	this.age++;
-}
-
-Enemy.prototype.add_velocity = function(vel){
-	var b = this.body;
-	var v = b.GetLinearVelocity();
-	
-	v.Add(vel);																	//check for max horizontal and vertical velocities and then set
-	if(Math.abs(v.y) > this.max_ver_vel){
-		v.y = this.max_ver_vel * v.y/Math.abs(v.y);
-		console.log("YVel", v.y);
-	}
-	if(Math.abs(v.x) > this.max_hor_vel){
-		v.x = this.max_hor_vel * v.x/Math.abs(v.x);
-	}
-	
-	b.SetLinearVelocity(v);														//set the new velocity
-}
-
-Enemy.img = img_res('pizza.gif');
-
-Enemy.prototype.draw = function(){
-	if(this.body == null){
-		return false;
-	}
-
-	var c = this.game.get_offset(this.body.GetPosition());
-	var scale = this.game.scale;
-	var sx = c.x * scale;
-	var sy = c.y * scale;
-	
-	var width = this.width * scale;
-	var height = this.height * scale;
-	// console.log("Draw enemy");
-	this.game.ctx.translate(sx, sy);
-	this.game.ctx.drawImage(Enemy.img , -width / 2, -height / 2, width, height);
-	this.game.ctx.translate(-sx, -sy);
-}
-														
-function wall(options)	{														//Static Wall object
-	this.x = options.x;
-	this.y = options.y;
-	this.height = options.height;
-	this.width = options.width;
-	this.game = options.game;
-	this.age = 0;
-	
-	var info = { 
-		'density' : 10 ,
-		'fixedRotation' : true ,
-		'userData' : this ,
-		'friction' : options.friction,
-		'type' : b2Body.b2_staticBody ,
-	};
-	
-	var body = create_box(this.game.box2d_world , this.x, this.y, this.width, this.height, info);
-	this.body = body;
-}
-
-wall.img = img_res('wall.png');
-wall.prototype.tick = function(){
-	this.age++;
-}
-
-wall.prototype.draw = function(){												////Draw bricks
-	var x1 = this.x - this.width/2;
-	var x2 = this.x + this.width/2;
-	var y1 = this.y + this.height/2;
-	var y2 = this.y - this.height/2;
-	
-	var scale = this.game.scale;
-	var width = 1.0 * scale;
-	var height = 1.0 * scale;
-	
-	for(var i = x1 ; i < x2; i++){
-		for(var j = y1; j > y2; j--){											//get canvas coordinates
-			var c = this.game.get_offset(new b2Vec2(i,j));
-			this.game.ctx.drawImage(wall.img , c.x * scale, c.y * scale, width, height);
-		}
-	}
-}
+// 	}, false );
