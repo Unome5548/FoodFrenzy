@@ -231,8 +231,8 @@ game.prototype.destroy_object = function(obj){									//schedule an object for 
 }
 
 function enemyProjectile(options){
-	this.height = 0.5;
-	this.width = 0.5;
+	this.height = 0.25;
+	this.width = 0.25;
 	this.x = options.x;
 	this.y = options.y;
 	
@@ -252,7 +252,7 @@ function enemyProjectile(options){
 	this.body = body;
 }
 
-enemyProjectile.img = img_res('star.png');
+enemyProjectile.img = img_res('pepperoni.gif');
 
 enemyProjectile.prototype.draw = function(){
 	if(this.body == null){
