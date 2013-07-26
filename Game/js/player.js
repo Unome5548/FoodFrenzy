@@ -1,6 +1,6 @@
 function player(options){
-	this.height = 1.3;
-	this.width = 2.0;
+	this.height = 2;
+	this.width = 3.0;
 	
 	this.x = options.x;
 	this.y = options.y;
@@ -40,7 +40,7 @@ player.prototype.tick = function(){
 	}
 	
 	if(this.do_move_up && this.can_move_up){
-		this.add_velocity(new b2Vec2(0,6));
+		this.add_velocity(new b2Vec2(0,8));
 		this.can_move_up = false;
 	}
 	

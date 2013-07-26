@@ -7,6 +7,7 @@ function playerBullet(options){
 	this.game = options.game;
 	this.direction = options.direction;
 	this.img = img_res('hot-pepper-bullet.gif');
+	this.age = 0;
 
 	var info = { 
 		'density' : 5 ,
@@ -18,7 +19,7 @@ function playerBullet(options){
 	
 	var body = create_box(this.game.box2d_world , this.x, this.y, this.width, this.height, info);
 	this.body = body;
-	this.body.ApplyImpulse(new b2Vec2(Math.cos(this.angle) * 7 * this.direction, Math.sin(this.angle) * 7),  this.body.GetWorldCenter());
+	this.body.ApplyImpulse(new b2Vec2(Math.cos(this.angle) * 7 * this.direction, Math.sin(this.angle) * 8),  this.body.GetWorldCenter());
 }
 
 playerBullet.prototype.draw = function(){
@@ -44,9 +45,10 @@ playerBullet.prototype.tick = function(){
 	this.age++;
 	
 	if(this.body.GetPosition().y > this.game.screen_height){											//destroy the enemyProjectile if it falls below the x axis
-		this.game.destroy_object(this);
+		this.game.to_destroy.push(this);
 		console.log("Object gone");
 	}
+	if(this.age > 50)this.game.to_destroy.push(this);
 }
 
 

@@ -1,23 +1,23 @@
 function enemyProjectile(options){
-	this.height = 0.25;
-	this.width = 0.25;
+	this.height = 0.4;
+	this.width = 0.4;
 	this.x = options.x;
 	this.y = options.y;
 	this.game = options.game;
 	this.img = img_res('pepperoni.gif');
 
 	
-	var linear_damping = 2;
+	var linear_damping = 3.5;
 	
 	var info = { 
-		'density' : 10 ,
+		'density' : .25 ,
 		'linearDamping' : linear_damping ,
-		'fixedRotation' : true ,
+		'friction' : 0,
 		'userData' : this ,
-		'type' : b2Body.b2_kinematicBody,
+		'type' : b2Body.b2_dynamicBody,
 	};
 	
-	var body = create_box(this.game.box2d_world , this.x, this.y, this.width, this.height, info);
+	var body = create_circle(this.game.box2d_world , this.x, this.y, this.width, info);
 	this.body = body;
 }
 
@@ -40,11 +40,10 @@ enemyProjectile.prototype.draw = function(){
 
 enemyProjectile.prototype.tick = function(){
 	this.age++;
-	
-	if(this.body.GetPosition().y < 0){											//destroy the enemyProjectile if it falls below the x axis
-		this.game.destroy_object(this);
+	if(this.body.GetPosition().y <= .5){											//destroy the enemyProjectile if it falls below the x axis
+		this.game.to_destroy.push(this);
 	}
-	this.add_velocity(new b2Vec2(0, -.05));
+	
 }
 
 

@@ -60,11 +60,12 @@ game.prototype.setup = function(){
 	this.game_objects.push(new wall({x : 23, y: 0, width : .25, height: 12, friction: 0, game : this}));	
 	this.player = new player({x : w/2, y: 0 , game : this});					//the player
 	this.game_objects.push(this.player);
-	for(var i=0; i<5; i++){
+	for(var i=0; i<3; i++){
 		var tempX = 2 + Math.random() * 10;
-		var tempY = 5 + Math.random() * 5;
-		this.game_objects.push(new Enemy({x : tempX, y: tempY, width : 2, height: 2, health: 25, speed: 3,  game : this}));
+		var tempY = 8 + Math.random() * 3;
+		this.game_objects.push(new Enemy({x : tempX, y: tempY, width : 2, height: 2, unitType: "pizza",  game : this}));
 	}
+	this.game_objects.push(new Enemy({x : 2, y: 12, width : 2, height: 2, unitType: "meatball",  game : this}));
 
 	this.start_handling();														//attach event handlers for key presses
 	this.setup_collision_handler();												//setup collision handler too
@@ -211,11 +212,6 @@ game.prototype.setup_collision_handler = function(){
 			that.health-= 5;
 			that.points++;
 		}
-		else if(b instanceof player && a instanceof enemyProjectile){
-			that.destroy_object(a);
-			that.health-= 5;
-			that.points++;
-		}
 		else if(a instanceof enemyProjectile && b instanceof wall){						//enemyProjectile hits a wall
 			that.destroy_object(a);
 		}
@@ -230,6 +226,10 @@ game.prototype.setup_collision_handler = function(){
 			that.destroy_object(a);
 			that.destroy_object(b);
 		}
+		// else if(a instanceof Enemy && b instanceof wall){
+		// 	that.destroy_object(a);
+		// }
+
 	}
 }
 
